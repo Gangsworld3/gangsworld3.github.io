@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Gangsworld · Creator Engineering</title>
+    <!-- Font Awesome 6 (free) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts: JetBrains Mono + Space Grotesk for accents -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #0a0f12, #030507);
+            color: #c6f0c6;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+
+        /* Matrix-like scanline */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,255,0,0.03) 0px, rgba(0,255,0,0.03) 2px, transparent 2px, transparent 6px);
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Glow & blur effects */
+        .glow-text {
+            text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
+        }
+
+        .terminal-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            position: relative;
+        }
+
+        /* Header / prompt line */
+        .prompt-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 1px solid #2e7d3222;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+        .dev-path {
+            color: #8bc34a;
+            letter-spacing: -0.5px;
+        }
+        .dev-path span {
+            color: #4caf50;
+        }
+        .cursor-blink {
+            background-color: #0f0;
+            display: inline-block;
+            width: 8px;
+            height: 1.2rem;
+            margin-left: 4px;
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* hacker badge */
+        .badge {
+            background: #0f1f0f;
+            border: 1px solid #2e7d32;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #b9f6ca;
+        }
+
+        /* Main title */
+        .hero h1 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #b9ffb9, #4caf50);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -1px;
+        }
+        .hero p {
+            font-size: 1.1rem;
+            color: #a5d6a5;
+            max-width: 700px;
+            margin-top: 1rem;
+        }
+
+        /* cards */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.6rem;
+            margin: 2.5rem 0;
+        }
+        .project-card {
+            background: rgba(10, 20, 8, 0.65);
+            backdrop-filter: blur(2px);
+            border: 1px solid #2c5a2c;
+            border-radius: 24px;
+            padding: 1.5rem;
+            transition: all 0.25s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+        .project-card:hover {
+            border-color: #7bc96f;
+            transform: translateY(-5px);
+            background: rgba(20, 35, 18, 0.85);
+            box-shadow: 0 0 15px rgba(100,255,100,0.2);
+        }
+        .project-status {
+            display: inline-block;
+            background: #1e3a1e;
+            color: #a5d6a7;
+            font-size: 0.65rem;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .status-active {
+            background: #0f4c2b;
+            color: #ccffcc;
+            border-left: 3px solid #0f0;
+        }
+        .project-card h3 {
+            font-size: 1.35rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: #e2ffe2;
+        }
+        .project-card p {
+            font-size: 0.85rem;
+            color: #bcd9b4;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* featured section */
+        .featured {
+            background: linear-gradient(145deg, #071007, #0a140a);
+            border: 1px solid #3c7840;
+            border-radius: 32px;
+            padding: 2rem;
+            margin: 2.5rem 0;
+            box-shadow: 0 0 20px rgba(80,200,80,0.15);
+        }
+        .featured h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .demo-placeholder {
+            background: #051005;
+            border: 1px dashed #4caf50;
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            font-family: monospace;
+            margin: 1rem 0;
+            color: #7bc96f;
+        }
+        .btn-github {
+            background: #0f2f0f;
+            border: 1px solid #5f9e4e;
+            padding: 0.7rem 1.4rem;
+            border-radius: 40px;
+            color: #d4ffc6;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-github:hover {
+            background: #2a5a2a;
+            border-color: #a0ff90;
+            color: white;
+            box-shadow: 0 0 10px #2eff2e66;
+        }
+
+        /* social bar */
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.8rem;
+            justify-content: center;
+            margin: 2.5rem 0 1rem;
+        }
+        .social-links a {
+            color: #b4e6b4;
+            font-size: 1.8rem;
+            transition: all 0.2s;
+        }
+        .social-links a:hover {
+            color: #9bff9b;
+            transform: scale(1.1);
+            text-shadow: 0 0 5px #0f0;
+        }
+
+        footer {
+            border-top: 1px solid #2e4a2a;
+            margin-top: 3rem;
+            padding: 1.5rem 0 0;
+            font-size: 0.7rem;
+            text-align: center;
+            color: #6c9e6c;
+        }
+
+        @media (max-width: 700px) {
+            .hero h1 { font-size: 2rem; }
+            .project-grid { grid-template-columns: 1fr; }
+            .terminal-container { padding: 1rem; }
+        }
+        .tagline {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .matrix-code {
+            font-size: 0.75rem;
+            color: #5f9e4e;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+<div class="terminal-container">
+    <!-- Terminal header vibe -->
+    <div class="prompt-bar">
+        <div class="dev-path">
+            <i class="fas fa-terminal"></i> gangsworld@hackerlab:~<span style="color:#c6f0c6">/projects</span><span class="cursor-blink"></span>
+        </div>
+        <div class="badge">
+            <i class="fas fa-skull"></i> ROOT ACCESS // BUILDER MODE
+        </div>
+    </div>
+
+    <!-- Hero section -->
+    <div class="hero">
+        <h1>Gangsworld<br><span style="font-size: 1.6rem;">// creator engineering lab</span></h1>
+        <p>Building open‑source weapons for the creator economy. <span class="glow-text">AI, automation, and zero‑BS tools.</span> Every project is crafted to give influencers, streamers, and video creators the unfair advantage.</p>
+        <div style="margin-top: 1rem;">
+            <span class="badge"><i class="fab fa-github"></i> github.com/Gangsworld3</span>
+            <span class="badge" style="margin-left: 10px;"><i class="fas fa-code-branch"></i> 20+ tools · 100% open core</span>
+        </div>
+    </div>
+
+    <!-- FEATURED : ViralClip Swarm (god mode) -->
+    <div class="featured">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <h2><i class="fas fa-bolt"></i> ViralClip Swarm</h2>
+            <span class="project-status status-active">🔥 ACTIVE DEVELOPMENT</span>
+        </div>
+        <p style="font-size: 1.1rem; margin: 0.5rem 0 1rem 0;">AI‑powered swarm intelligence that turns 2‑hour streams into 10 viral shorts — automatically.</p>
+        <div class="demo-placeholder">
+            <i class="fas fa-microchip"></i> [ AI DETECTION ] audio peaks · laughter spikes · chat velocity → top clips<br>
+            <i class="fas fa-film"></i> dynamic captions · smart crop 9:16 · batch export ready for TikTok/Reels
+            <div style="margin-top: 12px; font-size: 0.7rem;">⚡ terminal demo: <span style="color:#8bc34a;">$ viralclip swarm --url https://youtu.be/... --num-clips 8</span></div>
+        </div>
+        <div style="display: flex; gap: 20px; margin-top: 1rem; flex-wrap: wrap;">
+            <a href="#" class="btn-github" target="_blank"><i class="fab fa-github"></i> Star on GitHub</a>
+            <a href="#" class="btn-github" style="background:transparent;"><i class="fas fa-play"></i> Watch Demo</a>
+        </div>
+        <p class="matrix-code" style="margin-top: 1rem;"><i class="fas fa-robot"></i> locally processed · whisperX + ffmpeg + opencv · open‑source alternative to Opus Clip</p>
+    </div>
+
+    <!-- ALL 20 PROJECTS (main + 19 upcoming) -->
+    <h2 style="margin-top: 2rem;"><i class="fas fa-cubes"></i> Arsenal · 20 creator tools</h2>
+    <div class="project-grid">
+        <!-- 1. ViralClip Swarm already featured but we also list it as a card with status Active -->
+        <div class="project-card">
+            <div class="project-status status-active"><i class="fas fa-code-branch"></i> v0.9 · active</div>
+            <h3>ViralClip Swarm</h3>
+            <p>AI swarm that clips viral moments, adds dynamic captions, and exports vertical shorts automatically.</p>
+        </div>
+        <!-- 2. OpenReel -->
+        <div class="project-card">
+            <div class="project-status">coming Q3</div>
+            <h3>OpenReel</h3>
+            <p>Open source Descript alternative – edit video by editing text transcripts, local Whisper backend.</p>
+        </div>
+        <!-- 3. Thumbnail A/B Test Server -->
+        <div class="project-card">
+            <div class="project-status">prototype</div>
+            <h3>Thumbnail A/B Test</h3>
+            <p>Self‑hosted proxy to A/B test YouTube thumbnails and track CTR winners.</p>
+        </div>
+        <!-- 4. BrandDeck -->
+        <div class="project-card">
+            <div class="project-status">coming Q4</div>
+            <h3>BrandDeck</h3>
+            <p>Contract & deliverable tracker for influencer-brand deals. Automatic invoicing & scope control.</p>
+        </div>
+        <!-- 5. Fakespot Open Source -->
+        <div class="project-card">
+            <div class="project-status">research</div>
+            <h3>Authenticity Scanner</h3>
+            <p>Bot/follower graph analysis + influencer authenticity score, bot cleaner.</p>
+        </div>
+        <!-- 6. TrendCaster -->
+        <div class="project-card">
+            <div class="project-status">alpha</div>
+            <h3>TrendCaster</h3>
+            <p>Predictive analytics: scrapes rising TikTok sounds & reddit trends before they blow up.</p>
+        </div>
+        <!-- 7. Engagement Farm Simulator -->
+        <div class="project-card">
+            <div class="project-status">design</div>
+            <h3>Engagement Farm Sim</h3>
+            <p>AI-generated chat + toxicity sandbox to train community moderators safely.</p>
+        </div>
+        <!-- 8. StreamDeck OS -->
+        <div class="project-card">
+            <div class="project-status">hardware beta</div>
+            <h3>StreamDeck OS</h3>
+            <p>Open firmware for DIY Stream Decks (RPi Pico / Android) – full macro control.</p>
+        </div>
+        <!-- 9. OBS-GPT -->
+        <div class="project-card">
+            <div class="project-status">beta</div>
+            <h3>OBS-GPT</h3>
+            <p>AI overlay assistant for OBS: live chat Q&A, wiki lookup, alerts without alt‑tab.</p>
+        </div>
+        <!-- 10. Auto-Caption Renderer -->
+        <div class="project-card">
+            <div class="project-status">stable soon</div>
+            <h3>AutoCaption Renderer</h3>
+            <p>Rust/FFmpeg tool for blazing fast animated captions (word‑level highlighting).</p>
+        </div>
+        <!-- 11. AdPocalypse Shield -->
+        <div class="project-card">
+            <div class="project-status">ML training</div>
+            <h3>AdPocalypse Shield</h3>
+            <p>Pre‑upload scanner that flags demonetization risks (audio/visual/text).</p>
+        </div>
+        <!-- 12. DM Manager -->
+        <div class="project-card">
+            <div class="project-status">design</div>
+            <h3>DM Manager</h3>
+            <p>Sandboxed DM environment: opens links in disposable VM, filters scams.</p>
+        </div>
+        <!-- 13. MultiRift -->
+        <div class="project-card">
+            <div class="project-status">MVP</div>
+            <h3>MultiRift</h3>
+            <p>Cross‑platform scheduler: auto‑crop to 9:16, 16:9, 1:1, native API posting.</p>
+        </div>
+        <!-- 14. Podcast-to-Blog SEO Engine -->
+        <div class="project-card">
+            <div class="project-status">alpha</div>
+            <h3>Podcast2Blog</h3>
+            <p>WhisperX + LLM pipeline converts podcasts into SEO‑ready blog posts.</p>
+        </div>
+        <!-- 15. Discord Loyalty Engine -->
+        <div class="project-card">
+            <div class="project-status">beta</div>
+            <h3>Discord Loyalty Engine</h3>
+            <p>Watch‑time based roles & leaderboards, no crypto nonsense.</p>
+        </div>
+        <!-- 16. Reaction Cam Relayer -->
+        <div class="project-card">
+            <div class="project-status">legal review</div>
+            <h3>Reaction Cam Relayer</h3>
+            <p>DMCA‑safe reaction streaming tool – overlay cam without storing copyrighted VODs.</p>
+        </div>
+        <!-- 17. YouTube Sync -->
+        <div class="project-card">
+            <div class="project-status">prototype</div>
+            <h3>YouTube Sync</h3>
+            <p>Git‑style backup: download all videos, metadata, comments, restore to new channel.</p>
+        </div>
+        <!-- 18. Instagram Migration Assistant -->
+        <div class="project-card">
+            <div class="project-status">coming soon</div>
+            <h3>IG Migration Tool</h3>
+            <p>Export Instagram stories/highlights → Pixelfed or static portfolio.</p>
+        </div>
+        <!-- 19. CollabGraph -->
+        <div class="project-card">
+            <div class="project-status">design</div>
+            <h3>CollabGraph</h3>
+            <p>Decentralized creator collab network + reputation system.</p>
+        </div>
+        <!-- 20. Music Clearance DB -->
+        <div class="project-card">
+            <div class="project-status">data collection</div>
+            <h3>Music Clearance DB</h3>
+            <p>Open database of copyright status, public domain & CC alternatives.</p>
+        </div>
+    </div>
+
+    <!-- Social channels (god mode connects) -->
+    <div style="text-align: center; margin: 2rem 0 1rem;">
+        <h3><i class="fas fa-network-wired"></i> // join the swarm</h3>
+        <div class="social-links">
+            <a href="https://github.com/Gangsworld3" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+            <a href="#" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
+            <a href="#" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" target="_blank" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+            <a href="#" target="_blank" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+            <a href="#" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+        </div>
+        <div class="matrix-code" style="margin-top: 0.5rem;">
+            <i class="fas fa-shield-haltered"></i> all tools are weaponized open‑source · AGPL / MIT · community first
+        </div>
+    </div>
+
+    <footer>
+        <span>© 2026 Gangsworld · built with <i class="fas fa-heart" style="color:#6f9e6f;"></i> for creators & engineers</span><br>
+        <span style="font-size: 0.65rem;">#hackthecreator · trending on GitHub soon™</span>
+    </footer>
+</div>
+</body>
+</html>
